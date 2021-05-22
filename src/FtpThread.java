@@ -6,13 +6,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class FtpThread extends Thread{
-    ftpClientInterface window;
+    Interface window;
     PrintWriter ctrlOutput;
     BufferedReader ctrlInput;
     int func;
 
 
-    public FtpThread(ftpClientInterface win, int func, PrintWriter ctrlOutput, BufferedReader ctrlInput){
+    public FtpThread(Interface win, int func, PrintWriter ctrlOutput, BufferedReader ctrlInput){
         this.window = win;
         this.func = func;
         this.ctrlOutput = ctrlOutput;
@@ -25,7 +25,43 @@ public class FtpThread extends Thread{
                 doLogin();
                 break;
             case 2:
+                doCd();
+                break;
+            case 3:
                 doLs();
+                break;
+            case 4:
+                doLsDetail();
+                break;
+            case 5:
+                doMkdir();
+                break;
+            case 6:
+                doRmdir();
+                break;
+            case 7:
+                doLsCurDetail();
+                break;
+            case 8:
+                doCdRoot();
+                break;
+            case 9:
+                doUpOneDir();
+                break;
+            case 10:
+                doGet();
+                break;
+            case 11:
+                doPut();
+                break;
+            case 12:
+                doDel();
+                break;
+            case 13:
+                doAscii();
+                break;
+            case 14:
+                doBinary();
                 break;
         }
     }
@@ -69,19 +105,77 @@ public class FtpThread extends Thread{
         }
     }
 
-    private String[][] convertToHtml(String content){
-        String[] split = content.split("\s+|\n");
-        System.out.println(split.length);
-        String[][] output = new String[split.length / 9][2];
-        System.out.println(output.length);
-        for (int i = 1; i < output.length; i++){
-            output[i - 1][0] = split[i * 9];
-            output[i - 1][1] = split[8 + i * 9];
+    private void doCd() {
+        try{
+            ctrlOutput.println("CWD " + window.dirName.getText());
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
         }
-        return output;
     }
 
     private void doLs(){
+        try{
+            int n;
+            byte[] buff = new byte[1024];
+            Socket dataSocket = dataConnection("NLST " + window.dirName.getText());
+            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+            String content = "";
+            String a;
+            int i = 0;
+            while ((n = dataInput.read(buff)) > 0){
+                content += new String(buff, 0, n,"UTF-8");
+            }
+            window.FileList.setText(content);
+            dataSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doLsDetail(){
+        try{
+            int n;
+            byte[] buff = new byte[1024];
+            Socket dataSocket = dataConnection("LIST " + window.dirName.getText());
+            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+            String content = "";
+            String a;
+            int i = 0;
+            while ((n = dataInput.read(buff)) > 0){
+                content += new String(buff, 0, n,"UTF-8");
+            }
+            window.FileList.setText(content);
+            dataSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doMkdir() {
+        try{
+            ctrlOutput.println("MKD " + window.dirName.getText());
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doRmdir() {
+        try{
+            ctrlOutput.println("RMD " + window.dirName.getText());
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doLsCurDetail() {
         try{
             int n;
             byte[] buff = new byte[1024];
@@ -92,23 +186,100 @@ public class FtpThread extends Thread{
             int i = 0;
             while ((n = dataInput.read(buff)) > 0){
                 content += new String(buff, 0, n,"UTF-8");
-                //buff.toString();
             }
-            String[][] result = convertToHtml(content);
-            String[] localSiteFile = new String[/*result.length - 1*/1];
-            for (int j = 0; j < result.length - 1; j++){
-                if (result[j][0].charAt(0) == '-') {
-                    localSiteFile[0] = "<img src='E:\\Homework\\NetworkApplication\\FtpClient\\document.png'>" + result[j][1];
-                    localSiteFile[0] += "<br/>";
-                    System.out.println(localSiteFile[0]);
-                }
-            }
-            window.updateLocalSiteFile(localSiteFile);
-            System.out.println(window.getLocalSiteFile());
+            window.FileList.setText(content);
             dataSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
+
+    private void doCdRoot() {
+        try{
+            ctrlOutput.println("CWD /");
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doUpOneDir() {
+        try{
+            ctrlOutput.println("CWD ..");
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doGet() {
+        try {
+            int n;
+            byte[] buff = new byte[1024];
+            Socket dataSocket = dataConnection("RETR " + window.fileName.getText());
+            FileOutputStream outfile = new FileOutputStream(window.fileName.getText());
+            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+            while((n = dataInput.read(buff)) > 0){
+                outfile.write(buff, 0, n);
+            }
+            dataSocket.close();
+            outfile.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doPut() {
+        try {
+            int n;
+            byte[] buff = new byte[1024];
+            FileInputStream sendfile = new FileInputStream(window.fileName.getText());
+            Socket dataSocket = dataConnection("STOR " + window.fileName.getText());
+            OutputStream outstr = dataSocket.getOutputStream();
+            while ((n = sendfile.read(buff)) > 0){
+                outstr.write(buff, 0, n);
+            }
+            dataSocket.close();
+            sendfile.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doDel() {
+        try{
+            System.out.println(window.fileName.getText());
+            ctrlOutput.println("DELE " + window.fileName.getText());
+            ctrlOutput.flush();
+        } catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public void doAscii(){
+        try{
+            ctrlOutput.println("TYPE A");
+            ctrlOutput.flush();
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    public void doBinary(){
+        try{
+            ctrlOutput.println("TYPE I");
+            ctrlOutput.flush();
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
 }
