@@ -34,12 +34,14 @@ public class Interface {
     private JButton clearFileNameButton;
     private JButton lsBtn;
     private JButton lsCurDetailBtn;
+    public JScrollPane jscrollpanel;
     private Interface window;
 
     public PrintWriter ctrlOutput;
     public BufferedReader ctrlInput;
     private boolean connected = false;
     final int CTRLPORT = 21;
+    private  boolean lsDetail = true;
 
     public Interface() {
         this.window = this;
@@ -52,7 +54,7 @@ public class Interface {
                 if (!connected){
                     try {
                         openConnection("127.0.0.1"/*port.getText()*/);
-                        new FtpThread(window, 1, ctrlOutput, ctrlInput).start();
+                        new FtpThread(window, 1, ctrlOutput, ctrlInput, lsDetail).start();
                         window.getMsgs();
                         connected = true;
                     } catch (IOException ioException) {
@@ -86,7 +88,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 2, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 2, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -97,7 +99,8 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 3, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 3, ctrlOutput, ctrlInput, lsDetail).start();
+                    lsDetail = false;
                 }
                 else{
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -108,7 +111,8 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 4, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 4, ctrlOutput, ctrlInput, lsDetail).start();
+                    lsDetail = true;
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -131,7 +135,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 5, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 5, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -142,7 +146,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 6, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 6, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -153,7 +157,8 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 7, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 7, ctrlOutput, ctrlInput, lsDetail).start();
+                    lsDetail = true;
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -164,7 +169,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 8, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 8, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -175,7 +180,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 9, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 9, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -186,7 +191,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 10, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 10, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -197,7 +202,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 11, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 11, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -208,7 +213,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 12, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 12, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -219,7 +224,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 13, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 13, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
@@ -230,7 +235,7 @@ public class Interface {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (connected){
-                    new FtpThread(window, 14, ctrlOutput, ctrlInput).start();
+                    new FtpThread(window, 14, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
                     window.ServerMsg.append("Hasn't connect Server yet.\n");

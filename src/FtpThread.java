@@ -10,22 +10,38 @@ public class FtpThread extends Thread{
     PrintWriter ctrlOutput;
     BufferedReader ctrlInput;
     int func;
+    boolean lsDetail;
 
 
-    public FtpThread(Interface win, int func, PrintWriter ctrlOutput, BufferedReader ctrlInput){
+    public FtpThread(Interface win, int func, PrintWriter ctrlOutput, BufferedReader ctrlInput, boolean lsDetail){
         this.window = win;
         this.func = func;
         this.ctrlOutput = ctrlOutput;
         this.ctrlInput = ctrlInput;
+        this.lsDetail = lsDetail;
     }
 
     public void run(){
         switch (func){
             case 1:
                 doLogin();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 2:
                 doCd();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 3:
                 doLs();
@@ -35,27 +51,69 @@ public class FtpThread extends Thread{
                 break;
             case 5:
                 doMkdir();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 6:
                 doRmdir();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 7:
                 doLsCurDetail();
                 break;
             case 8:
                 doCdRoot();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 9:
                 doUpOneDir();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 10:
                 doGet();
                 break;
             case 11:
                 doPut();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 12:
                 doDel();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
                 break;
             case 13:
                 doAscii();
@@ -180,6 +238,26 @@ public class FtpThread extends Thread{
             int n;
             byte[] buff = new byte[1024];
             Socket dataSocket = dataConnection("LIST");
+            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+            String content = "";
+            String a;
+            int i = 0;
+            while ((n = dataInput.read(buff)) > 0){
+                content += new String(buff, 0, n,"UTF-8");
+            }
+            window.FileList.setText(content);
+            dataSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void doLsCur() {
+        try{
+            int n;
+            byte[] buff = new byte[1024];
+            Socket dataSocket = dataConnection("NLST");
             BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
             String content = "";
             String a;
