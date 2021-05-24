@@ -25,13 +25,6 @@ public class FtpThread extends Thread{
         switch (func){
             case 1:
                 doLogin();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 2:
                 doCd();
@@ -121,18 +114,19 @@ public class FtpThread extends Thread{
             case 14:
                 doBinary();
                 break;
+            case 15:
+                doQuit();
+                break;
         }
     }
 
+
     public Socket dataConnection(String ctrlcmd){
-        String cmd = "PORT 127,0,0,1,";
+        String cmd = "PORT ";
         int i;
         Socket dataSocket = null;
         try{
-            /*byte[] address = InetAddress.getLocalHost().getAddress();
-            for(i = 0; i < 4; ++i){
-                cmd = cmd + (address[i] & 0xff) + ",";
-            }*/
+            cmd = cmd + window.host.getText().replace(".", ",") + ",";
             ServerSocket serverDataSocket = new ServerSocket(0, 1);
             cmd = cmd + ((serverDataSocket.getLocalPort() / 256) & 0xff) + "," + (serverDataSocket.getLocalPort() & 0xff);
             ctrlOutput.println(cmd);
@@ -149,87 +143,134 @@ public class FtpThread extends Thread{
     }
 
     private void doLogin(){
-        String loginName = "";
-        String password = "";
         BufferedReader lineread = new BufferedReader(new InputStreamReader(System.in));
-        try{
-            ctrlOutput.println("USER " + "user"/*window.getUsername()*/);
-            ctrlOutput.flush();
-            ctrlOutput.println("PASS " + "user"/*window.getPassword()*/);
-            ctrlOutput.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+        if (window.username.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Username!\n");
+            window.currentMsg.setText("Please Enter Username!");
+        }
+        else if (window.password.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Password!\n");
+            window.currentMsg.setText("Please Enter Password!");
+        }
+        else{
+            try{
+                ctrlOutput.println("USER " + window.username.getText());
+                ctrlOutput.flush();
+                ctrlOutput.println("PASS " + window.password.getText());
+                ctrlOutput.flush();
+                if (lsDetail)
+                {
+                    doLsCurDetail();
+                }
+                else {
+                    doLsCur();
+                }
+                window.connBtn.setText("Disconnect");
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
     private void doCd() {
-        try{
-            ctrlOutput.println("CWD " + window.dirName.getText());
-            ctrlOutput.flush();
-        } catch(Exception e){
-            e.printStackTrace();
-            System.exit(1);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Directory Name!\n");
+            window.currentMsg.setText("Please Enter Directory Name!");
+        }
+        else{
+            try{
+                ctrlOutput.println("CWD " + window.dirName.getText());
+                ctrlOutput.flush();
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
     private void doLs(){
-        try{
-            int n;
-            byte[] buff = new byte[1024];
-            Socket dataSocket = dataConnection("NLST " + window.dirName.getText());
-            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
-            String content = "";
-            String a;
-            int i = 0;
-            while ((n = dataInput.read(buff)) > 0){
-                content += new String(buff, 0, n,"UTF-8");
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Directory Name!\n");
+            window.currentMsg.setText("Please Enter Directory Name!");
+        }
+        else{
+            try{
+                int n;
+                byte[] buff = new byte[1024];
+                Socket dataSocket = dataConnection("NLST " + window.dirName.getText());
+                BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+                String content = "";
+                String a;
+                int i = 0;
+                while ((n = dataInput.read(buff)) > 0){
+                    content += new String(buff, 0, n,"UTF-8");
+                }
+                window.FileList.setText(content);
+                dataSocket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
             }
-            window.FileList.setText(content);
-            dataSocket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private void doLsDetail(){
-        try{
-            int n;
-            byte[] buff = new byte[1024];
-            Socket dataSocket = dataConnection("LIST " + window.dirName.getText());
-            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
-            String content = "";
-            String a;
-            int i = 0;
-            while ((n = dataInput.read(buff)) > 0){
-                content += new String(buff, 0, n,"UTF-8");
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Directory Name!\n");
+            window.currentMsg.setText("Please Enter Directory Name!");
+        }
+        else{
+            try{
+                int n;
+                byte[] buff = new byte[1024];
+                Socket dataSocket = dataConnection("LIST " + window.dirName.getText());
+                BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+                String content = "";
+                String a;
+                int i = 0;
+                while ((n = dataInput.read(buff)) > 0){
+                    content += new String(buff, 0, n,"UTF-8");
+                }
+                window.FileList.setText(content);
+                dataSocket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
             }
-            window.FileList.setText(content);
-            dataSocket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private void doMkdir() {
-        try{
-            ctrlOutput.println("MKD " + window.dirName.getText());
-            ctrlOutput.flush();
-        } catch(Exception e){
-            e.printStackTrace();
-            System.exit(1);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Directory Name!\n");
+            window.currentMsg.setText("Please Enter Directory Name!");
+        }
+        else{
+            try{
+                ctrlOutput.println("MKD " + window.dirName.getText());
+                ctrlOutput.flush();
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
     private void doRmdir() {
-        try{
-            ctrlOutput.println("RMD " + window.dirName.getText());
-            ctrlOutput.flush();
-        } catch(Exception e){
-            e.printStackTrace();
-            System.exit(1);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter Directory Name!\n");
+            window.currentMsg.setText("Please Enter Directory Name!");
+        }
+        else{
+            try{
+                ctrlOutput.println("RMD " + window.dirName.getText());
+                ctrlOutput.flush();
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
@@ -294,49 +335,67 @@ public class FtpThread extends Thread{
     }
 
     private void doGet() {
-        try {
-            int n;
-            byte[] buff = new byte[1024];
-            Socket dataSocket = dataConnection("RETR " + window.fileName.getText());
-            FileOutputStream outfile = new FileOutputStream(window.fileName.getText());
-            BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
-            while((n = dataInput.read(buff)) > 0){
-                outfile.write(buff, 0, n);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter FileName!\n");
+            window.currentMsg.setText("Please Enter FileName!");
+        }
+        else{
+            try {
+                int n;
+                byte[] buff = new byte[1024];
+                Socket dataSocket = dataConnection("RETR " + window.fileName.getText());
+                FileOutputStream outfile = new FileOutputStream(window.fileName.getText());
+                BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
+                while((n = dataInput.read(buff)) > 0){
+                    outfile.write(buff, 0, n);
+                }
+                dataSocket.close();
+                outfile.close();
+            }catch (Exception e){
+                e.printStackTrace();
+                System.exit(1);
             }
-            dataSocket.close();
-            outfile.close();
-        }catch (Exception e){
-            e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private void doPut() {
-        try {
-            int n;
-            byte[] buff = new byte[1024];
-            FileInputStream sendfile = new FileInputStream(window.fileName.getText());
-            Socket dataSocket = dataConnection("STOR " + window.fileName.getText());
-            OutputStream outstr = dataSocket.getOutputStream();
-            while ((n = sendfile.read(buff)) > 0){
-                outstr.write(buff, 0, n);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter FileName!\n");
+            window.currentMsg.setText("Please Enter FileName!");
+        }
+        else{
+            try {
+                int n;
+                byte[] buff = new byte[1024];
+                FileInputStream sendfile = new FileInputStream(window.fileName.getText());
+                Socket dataSocket = dataConnection("STOR " + window.fileName.getText());
+                OutputStream outstr = dataSocket.getOutputStream();
+                while ((n = sendfile.read(buff)) > 0){
+                    outstr.write(buff, 0, n);
+                }
+                dataSocket.close();
+                sendfile.close();
+            }catch (Exception e){
+                e.printStackTrace();
+                System.exit(1);
             }
-            dataSocket.close();
-            sendfile.close();
-        }catch (Exception e){
-            e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private void doDel() {
-        try{
-            System.out.println(window.fileName.getText());
-            ctrlOutput.println("DELE " + window.fileName.getText());
-            ctrlOutput.flush();
-        } catch(Exception e){
-            e.printStackTrace();
-            System.exit(1);
+        if (window.dirName.getText().length() == 0){
+            window.ServerMsg.append("Please Enter FileName!\n");
+            window.currentMsg.setText("Please Enter FileName!");
+        }
+        else{
+            try{
+                System.out.println(window.fileName.getText());
+                ctrlOutput.println("DELE " + window.fileName.getText());
+                ctrlOutput.flush();
+            } catch(Exception e){
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 
@@ -360,4 +419,14 @@ public class FtpThread extends Thread{
         }
     }
 
+    private void doQuit() {
+        try{
+            ctrlOutput.println("QUIT");
+            ctrlOutput.flush();
+            window.connBtn.setText("Connect");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+    }
 }

@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class Interface {
     public JTextField host;
     public JTextField username;
-    public JTextField password;
-    private JButton connBtn;
-    private JButton disconnBtn;
+    public JPasswordField password;
+    public JButton connBtn;
     public JTextField fileName;
     public JTextField dirName;
     private JButton GetFBtn;
@@ -52,46 +52,55 @@ public class Interface {
         connBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!connected){
-                    try {
-                        openConnection("127.0.0.1"/*port.getText()*/);
-                        new FtpThread(window, 1, ctrlOutput, ctrlInput, lsDetail).start();
-                        window.getMsgs();
-                        connected = true;
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
+                if (window.connBtn.getText().equals("Connect")){
+                    if (window.host.getText().length() == 0){
+                        window.ServerMsg.append("Please Enter The Host!\n");
+                        window.currentMsg.setText("Please Enter The Host!");
+                    }
+                    else{
+                        try {
+                            openConnection(window.host.getText());
+                            if (ctrlOutput == null){
+                                window.ServerMsg.append("Please Enter The CORRECT Host!\n");
+                                window.currentMsg.setText("Please Enter The CORRECT Host!");
+                                return;
+                            }
+                            if (ctrlOutput == null){
+                                window.ServerMsg.append("Please Enter The CORRECT Host!\n");
+                                window.currentMsg.setText("Please Enter The CORRECT Host!");
+                                return;
+                            }
+                            FtpThread thread = new FtpThread(window, 1, ctrlOutput, ctrlInput, lsDetail);
+                            thread.start();
+                            thread.wait();
+                            if (window.connBtn.getText().equals("Disconnect")){
+                                window.ServerMsg.setText("");
+                                window.getMsgs();
+                            }
+                            else {
+                                window.ServerMsg.append("Please Enter CORRECT Username & Password!\n");
+                                window.currentMsg.setText("Please Enter CORRECT Username & Password!");
+                            }
+                        } catch (IOException | InterruptedException ioException) {
+                            ioException.printStackTrace();
+                        }
                     }
                 }
                 else{
-                    window.ServerMsg.append("You have already connected Server now.\n");
-                }
-            }
-        });
-        disconnBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (connected){
-                    try{
-                        ctrlOutput.println("QUIT");
-                        ctrlOutput.flush();
-                        connected = false;
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
-                }
-                else{
-                    window.ServerMsg.append("Hasn't connect Server yet.\n");
+                    new FtpThread(window, 15, ctrlOutput, ctrlInput, lsDetail).start();
+                    window.ServerMsg.setText("");
+                    window.currentMsg.setText("Good Bye~");
                 }
             }
         });
         cdBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 2, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -99,11 +108,12 @@ public class Interface {
         lsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 3, ctrlOutput, ctrlInput, lsDetail).start();
                     lsDetail = false;
                 }
                 else{
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -111,11 +121,12 @@ public class Interface {
         lsDetailBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 4, ctrlOutput, ctrlInput, lsDetail).start();
                     lsDetail = true;
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -135,10 +146,11 @@ public class Interface {
         MkDBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 5, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -146,7 +158,7 @@ public class Interface {
         RmDBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 6, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
@@ -157,11 +169,12 @@ public class Interface {
         lsCurDetailBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 7, ctrlOutput, ctrlInput, lsDetail).start();
                     lsDetail = true;
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -169,10 +182,11 @@ public class Interface {
         BackRootBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 8, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -180,10 +194,11 @@ public class Interface {
         UpOneDirBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 9, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -191,10 +206,11 @@ public class Interface {
         GetFBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 10, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -202,7 +218,7 @@ public class Interface {
         PutFBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 11, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
@@ -213,10 +229,11 @@ public class Interface {
         RmFBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 12, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -224,10 +241,11 @@ public class Interface {
         ToAsciiBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 13, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
@@ -235,19 +253,24 @@ public class Interface {
         ToBinaryBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (connected){
+                if (!window.connBtn.getText().equals("Connect")){
                     new FtpThread(window, 14, ctrlOutput, ctrlInput, lsDetail).start();
                 }
                 else {
+                    window.currentMsg.setText("Hasn't connect Server yet.");
                     window.ServerMsg.append("Hasn't connect Server yet.\n");
                 }
             }
         });
     }
 
-    public void openConnection(String host) throws IOException, UnknownHostException {
+    public void openConnection(String host) throws IOException, UnknownHostException,SocketException {
         Socket ctrlSocket;
-        ctrlSocket = new Socket(host, CTRLPORT);
+        try {
+            ctrlSocket = new Socket(host, CTRLPORT);
+        }catch (SocketException se){
+            return;
+        }
         ctrlOutput = new PrintWriter(ctrlSocket.getOutputStream());
         ctrlInput = new BufferedReader(new InputStreamReader(ctrlSocket.getInputStream()));
     }
