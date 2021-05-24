@@ -26,6 +26,7 @@ class CtrlListen implements Runnable{
             try{
                 if ((line = ctrlInput.readLine()) != null) {
                     window.ServerMsg.append("\n" + line);
+                    window.currentMsg.setText(line);
                     jScrollBar.setValue(jScrollBar.getMaximum());
                 }
             } catch (Exception e) {

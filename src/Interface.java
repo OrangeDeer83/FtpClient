@@ -35,6 +35,7 @@ public class Interface {
     private JButton lsBtn;
     private JButton lsCurDetailBtn;
     public JScrollPane jscrollpanel;
+    public JLabel currentMsg;
     private Interface window;
 
     public PrintWriter ctrlOutput;
