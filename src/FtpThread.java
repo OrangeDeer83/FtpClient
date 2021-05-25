@@ -1,9 +1,6 @@
-import java.awt.*;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class FtpThread extends Thread{
     Interface window;
@@ -28,13 +25,6 @@ public class FtpThread extends Thread{
                 break;
             case 2:
                 doCd();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 3:
                 doLs();
@@ -44,16 +34,11 @@ public class FtpThread extends Thread{
                 break;
             case 5:
                 doMkdir();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 6:
                 doRmdir();
+                break;
+            case 7:
                 if (lsDetail)
                 {
                     doLsCurDetail();
@@ -61,52 +46,21 @@ public class FtpThread extends Thread{
                 else {
                     doLsCur();
                 }
-                break;
-            case 7:
-                doLsCurDetail();
                 break;
             case 8:
                 doCdRoot();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 9:
                 doUpOneDir();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 10:
                 doGet();
                 break;
             case 11:
                 doPut();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 12:
                 doDel();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
                 break;
             case 13:
                 doAscii();
@@ -118,6 +72,8 @@ public class FtpThread extends Thread{
                 doQuit();
                 break;
         }
+        window.dirName.setText("");
+        window.fileName.setText("");
     }
 
 
@@ -126,7 +82,12 @@ public class FtpThread extends Thread{
         int i;
         Socket dataSocket = null;
         try{
-            cmd = cmd + window.host.getText().replace(".", ",") + ",";
+            if (window.host.getText().equalsIgnoreCase("localhost")){
+                cmd = "PORT 127,0,0,1,";
+            }
+            else{
+                cmd = cmd + window.host.getText().replace(".", ",") + ",";
+            }
             ServerSocket serverDataSocket = new ServerSocket(0, 1);
             cmd = cmd + ((serverDataSocket.getLocalPort() / 256) & 0xff) + "," + (serverDataSocket.getLocalPort() & 0xff);
             ctrlOutput.println(cmd);
@@ -137,46 +98,24 @@ public class FtpThread extends Thread{
             serverDataSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
         return dataSocket;
     }
 
     private void doLogin(){
         BufferedReader lineread = new BufferedReader(new InputStreamReader(System.in));
-        if (window.username.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Username!\n");
-            window.currentMsg.setText("Please Enter Username!");
-        }
-        else if (window.password.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Password!\n");
-            window.currentMsg.setText("Please Enter Password!");
-        }
-        else{
-            try{
-                ctrlOutput.println("USER " + window.username.getText());
-                ctrlOutput.flush();
-                ctrlOutput.println("PASS " + window.password.getText());
-                ctrlOutput.flush();
-                if (lsDetail)
-                {
-                    doLsCurDetail();
-                }
-                else {
-                    doLsCur();
-                }
-                window.connBtn.setText("Disconnect");
-                return;
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+        try{
+            ctrlOutput.println("USER " + window.username.getText());
+            ctrlOutput.flush();
+            ctrlOutput.println("PASS " + window.password.getText());
+            ctrlOutput.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     private void doCd() {
         if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Directory Name!\n");
             window.currentMsg.setText("Please Enter Directory Name!");
         }
         else{
@@ -185,14 +124,19 @@ public class FtpThread extends Thread{
                 ctrlOutput.flush();
             } catch(Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
     private void doLs(){
         if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Directory Name!\n");
             window.currentMsg.setText("Please Enter Directory Name!");
         }
         else{
@@ -211,14 +155,12 @@ public class FtpThread extends Thread{
                 dataSocket.close();
             } catch (Exception e) {
                 e.printStackTrace();
-                System.exit(1);
             }
         }
     }
 
     private void doLsDetail(){
         if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Directory Name!\n");
             window.currentMsg.setText("Please Enter Directory Name!");
         }
         else{
@@ -237,14 +179,12 @@ public class FtpThread extends Thread{
                 dataSocket.close();
             } catch (Exception e) {
                 e.printStackTrace();
-                System.exit(1);
             }
         }
     }
 
     private void doMkdir() {
         if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Directory Name!\n");
             window.currentMsg.setText("Please Enter Directory Name!");
         }
         else{
@@ -253,14 +193,19 @@ public class FtpThread extends Thread{
                 ctrlOutput.flush();
             } catch(Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
     private void doRmdir() {
         if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter Directory Name!\n");
             window.currentMsg.setText("Please Enter Directory Name!");
         }
         else{
@@ -269,8 +214,14 @@ public class FtpThread extends Thread{
                 ctrlOutput.flush();
             } catch(Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
@@ -290,7 +241,6 @@ public class FtpThread extends Thread{
             dataSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
@@ -310,7 +260,6 @@ public class FtpThread extends Thread{
             dataSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
@@ -320,7 +269,13 @@ public class FtpThread extends Thread{
             ctrlOutput.flush();
         } catch(Exception e){
             e.printStackTrace();
-            System.exit(1);
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
@@ -330,13 +285,18 @@ public class FtpThread extends Thread{
             ctrlOutput.flush();
         } catch(Exception e){
             e.printStackTrace();
-            System.exit(1);
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
     private void doGet() {
-        if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter FileName!\n");
+        if (window.fileName.getText().length() == 0){
             window.currentMsg.setText("Please Enter FileName!");
         }
         else{
@@ -344,7 +304,9 @@ public class FtpThread extends Thread{
                 int n;
                 byte[] buff = new byte[1024];
                 Socket dataSocket = dataConnection("RETR " + window.fileName.getText());
-                FileOutputStream outfile = new FileOutputStream(window.fileName.getText());
+                String filenameAtServer = window.fileName.getText();
+                String filename = filenameAtServer.split("/|\\\\")[filenameAtServer.split("/|\\\\").length - 1];
+                FileOutputStream outfile = new FileOutputStream(filename);
                 BufferedInputStream dataInput = new BufferedInputStream(dataSocket.getInputStream());
                 while((n = dataInput.read(buff)) > 0){
                     outfile.write(buff, 0, n);
@@ -353,21 +315,27 @@ public class FtpThread extends Thread{
                 outfile.close();
             }catch (Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
         }
     }
 
     private void doPut() {
-        if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter FileName!\n");
+        if (window.fileName.getText().length() == 0){
             window.currentMsg.setText("Please Enter FileName!");
         }
         else{
             try {
                 int n;
                 byte[] buff = new byte[1024];
-                FileInputStream sendfile = new FileInputStream(window.fileName.getText());
+                FileInputStream sendfile = null;
+                try {
+                    sendfile = new FileInputStream(window.fileName.getText());
+                }catch (FileNotFoundException e){
+                    window.currentMsg.setText("File Not Found!!");
+                    return;
+                }
+                String filenameAtServer = window.fileName.getText();
+                String filename = filenameAtServer.split("/|\\\\")[filenameAtServer.split("/|\\\\").length - 1];
                 Socket dataSocket = dataConnection("STOR " + window.fileName.getText());
                 OutputStream outstr = dataSocket.getOutputStream();
                 while ((n = sendfile.read(buff)) > 0){
@@ -377,14 +345,19 @@ public class FtpThread extends Thread{
                 sendfile.close();
             }catch (Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
     private void doDel() {
-        if (window.dirName.getText().length() == 0){
-            window.ServerMsg.append("Please Enter FileName!\n");
+        if (window.fileName.getText().length() == 0){
             window.currentMsg.setText("Please Enter FileName!");
         }
         else{
@@ -394,8 +367,14 @@ public class FtpThread extends Thread{
                 ctrlOutput.flush();
             } catch(Exception e){
                 e.printStackTrace();
-                System.exit(1);
             }
+        }
+        if (lsDetail)
+        {
+            doLsCurDetail();
+        }
+        else {
+            doLsCur();
         }
     }
 
@@ -405,7 +384,6 @@ public class FtpThread extends Thread{
             ctrlOutput.flush();
         } catch (Exception e){
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
@@ -415,7 +393,6 @@ public class FtpThread extends Thread{
             ctrlOutput.flush();
         } catch (Exception e){
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
@@ -426,7 +403,6 @@ public class FtpThread extends Thread{
             window.connBtn.setText("Connect");
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.exit(1);
         }
     }
 }

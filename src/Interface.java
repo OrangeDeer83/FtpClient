@@ -40,9 +40,9 @@ public class Interface {
 
     public PrintWriter ctrlOutput;
     public BufferedReader ctrlInput;
-    private boolean connected = false;
     final int CTRLPORT = 21;
     private  boolean lsDetail = true;
+    CtrlListen listenThread = null;
 
     public Interface() {
         this.window = this;
@@ -52,45 +52,68 @@ public class Interface {
         connBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (window.connBtn.getText().equals("Connect")){
-                    if (window.host.getText().length() == 0){
-                        window.ServerMsg.append("Please Enter The Host!\n");
-                        window.currentMsg.setText("Please Enter The Host!");
-                    }
-                    else{
-                        try {
-                            openConnection(window.host.getText());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (window.connBtn.getText().equals("Connect")){
+                        ctrlOutput = null;
+                        ctrlInput = null;
+                        if (window.host.getText().length() == 0){
+                            window.ServerMsg.append("Please Enter The Host!\n");
+                            window.currentMsg.setText("Please Enter The Host!");
+                        }
+                        else{
+                            if (window.username.getText().length() == 0){
+                                window.ServerMsg.append("Please Enter Username!\n");
+                                window.currentMsg.setText("Please Enter Username!");
+                                return;
+                            }
+                            else if (window.password.getText().length() == 0){
+                                window.ServerMsg.append("Please Enter Password!\n");
+                                window.currentMsg.setText("Please Enter Password!");
+                                return;
+                            }
+                            window.connBtn.setEnabled(false);
+                            window.connBtn.setText("Connecting Host");
+                            try {
+                                openConnection(window.host.getText());
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
                             if (ctrlOutput == null){
                                 window.ServerMsg.append("Please Enter The CORRECT Host!\n");
                                 window.currentMsg.setText("Please Enter The CORRECT Host!");
+                                window.connBtn.setText("Connect");
+                                window.connBtn.setEnabled(true);
                                 return;
                             }
-                            if (ctrlOutput == null){
-                                window.ServerMsg.append("Please Enter The CORRECT Host!\n");
-                                window.currentMsg.setText("Please Enter The CORRECT Host!");
-                                return;
-                            }
-                            FtpThread thread = new FtpThread(window, 1, ctrlOutput, ctrlInput, lsDetail);
-                            thread.start();
-                            thread.wait();
-                            if (window.connBtn.getText().equals("Disconnect")){
-                                window.ServerMsg.setText("");
-                                window.getMsgs();
-                            }
-                            else {
-                                window.ServerMsg.append("Please Enter CORRECT Username & Password!\n");
-                                window.currentMsg.setText("Please Enter CORRECT Username & Password!");
-                            }
-                        } catch (IOException | InterruptedException ioException) {
-                            ioException.printStackTrace();
+                        if (ctrlInput == null){
+                            window.ServerMsg.append("Please Enter The CORRECT Host!\n");
+                            window.currentMsg.setText("Please Enter The CORRECT Host!");
+                            window.connBtn.setText("Connect");
+                            window.connBtn.setEnabled(true);
+                            return;
+                        }
+                        listenThread = window.getMsgs();
+                        FtpThread loginThread = new FtpThread(window, 1, ctrlOutput, ctrlInput, lsDetail);
+                        loginThread.start();
+                        System.out.println("123");
+                        while (listenThread.isLogin() == 0){ System.out.println();}
+                        if (listenThread.isLogin() == 1){
+                            new FtpThread(window, 7, ctrlOutput, ctrlInput, lsDetail).start();
                         }
                     }
                 }
                 else{
-                    new FtpThread(window, 15, ctrlOutput, ctrlInput, lsDetail).start();
-                    window.ServerMsg.setText("");
-                    window.currentMsg.setText("Good Bye~");
+                    FtpThread quitThread = new FtpThread(window, 15, ctrlOutput, ctrlInput, lsDetail);
+                    quitThread.start();
+                    try {
+                        quitThread.join();
+                    } catch (InterruptedException interruptedException) {
+                        interruptedException.printStackTrace();
+                    }
                 }
+                }}).start();
             }
         });
         cdBtn.addActionListener(new ActionListener() {
@@ -268,7 +291,9 @@ public class Interface {
         Socket ctrlSocket;
         try {
             ctrlSocket = new Socket(host, CTRLPORT);
-        }catch (SocketException se){
+        }catch (SocketException | UnknownHostException se){
+            window.ServerMsg.append(se.getMessage());
+            window.ServerMsg.append("\n");
             return;
         }
         ctrlOutput = new PrintWriter(ctrlSocket.getOutputStream());
@@ -279,21 +304,20 @@ public class Interface {
         JFrame frame = new JFrame("FtpClient");
         frame.setContentPane(new Interface().panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //frame.add(new JButton("Button"), 0, 0);
         frame.pack();
         frame.setVisible(true);
         frame.setLocation(20, 200);
         frame.setSize(1500, 400);
     }
 
-    public void getMsgs() {
+    public CtrlListen getMsgs() {
+        CtrlListen listener = null;
         try {
-            CtrlListen listener = new CtrlListen(window, ctrlInput);
-            Thread listenerthread = new Thread(listener);
-            listenerthread.start();
+            listener = new CtrlListen(window, ctrlInput);
+            listener.start();
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
+        return listener;
     }
 }
